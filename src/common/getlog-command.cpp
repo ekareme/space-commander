@@ -26,7 +26,7 @@
 
 extern const char* s_cs1_subsystems[];  // defined in subsystems.cpp
 
-static char local_log_buffer[CS1_MAX_LOG_ENTRY] = {0};
+static char log_buf[CS1_MAX_LOG_ENTRY] = {0};
 
 /*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 *
@@ -169,14 +169,14 @@ size_t GetLogCommand::ReadFile_FromStartToEnd(char *buffer, const char *filename
     size_t bytes = 0;
 
     if (!buffer) {
-        snprintf(local_log_buffer, CS1_MAX_LOG_ENTRY, " %s:%d - The output buffer is NULL.\n", __func__, __LINE__);
-        Shakespeare::log(Shakespeare::ERROR, cs1_systems[CS1_COMMANDER], local_log_buffer);
+        snprintf(log_buf, CS1_MAX_LOG_ENTRY, " %s:%d - The output buffer is NULL.\n", __func__, __LINE__);
+        Shakespeare::log(Shakespeare::ERROR, cs1_systems[CS1_COMMANDER], log_buf);
         return bytes;
     }
 
     if (!pFile) {
-        snprintf(local_log_buffer,CS1_MAX_LOG_ENTRY, " %s:%d - Cannot fopen the file.\n", __func__, __LINE__);
-	Shakespeare::log(Shakespeare::ERROR, cs1_systems[CS1_COMMANDER], local_log_buffer);
+        snprintf(log_buf,CS1_MAX_LOG_ENTRY, " %s:%d - Cannot fopen the file.\n", __func__, __LINE__);
+	Shakespeare::log(Shakespeare::ERROR, cs1_systems[CS1_COMMANDER], log_buf);
         return bytes;
     }
 
@@ -185,12 +185,12 @@ size_t GetLogCommand::ReadFile_FromStartToEnd(char *buffer, const char *filename
 
     if (feof(pFile)) {
         #ifdef CS1_DEBUG
-            snprintf(local_log_buffer,CS1_MAX_LOG_ENTRY, "%s EOF reached \n", __func__);
-	Shakespeare::log(Shakespeare::NOTICE, cs1_systems[CS1_COMMANDER], local_log_buffer);
+            snprintf(log_buf,CS1_MAX_LOG_ENTRY, "%s EOF reached \n", __func__);
+	Shakespeare::log(Shakespeare::NOTICE, cs1_systems[CS1_COMMANDER], log_buf);
         #endif
     } else {
-        snprintf(local_log_buffer,CS1_MAX_LOG_ENTRY, " %s:%s:%d - EOF has not been reached, the file will be incomplete", __FILE__, __func__, __LINE__);
-	Shakespeare::log(Shakespeare::ERROR, cs1_systems[CS1_COMMANDER], local_log_buffer);
+        snprintf(log_buf,CS1_MAX_LOG_ENTRY, " %s:%s:%d - EOF has not been reached, the file will be incomplete", __FILE__, __func__, __LINE__);
+	Shakespeare::log(Shakespeare::ERROR, cs1_systems[CS1_COMMANDER], log_buf);
     }
 
     // Cleanup
