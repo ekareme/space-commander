@@ -43,6 +43,7 @@ TEST_GROUP(GroundCommandTestGroup)
 {
     	Net2Com *Test_GD_Commander;
 	static const int BUFFER_SIZE = 50;
+	static const int NULL_CHAR_LENGTH = 1;
 
     void setup()
     {
@@ -51,7 +52,7 @@ TEST_GROUP(GroundCommandTestGroup)
 	mkdir(CS1_PIPES, S_IRWXU);
 	mkdir(GND_PIPES, S_IRWXU);
 
-	Test_GD_Commander = new Net2Com(GDcom_w_net_r, GDnet_w_com_r, GIcom_w_net_r, GInet_w_com_r);
+	Test_GD_Commander = new Net2Com(GDnet_w_com_r, GDcom_w_net_r, GInet_w_com_r, GIcom_w_net_r);
         pid_t pid = fork();
 
         if (pid == 0) {
@@ -110,15 +111,15 @@ TEST(GroundCommandTestGroup, Read_Command_Success)
     // - check that the command was removed from the Command Input File
     // - verfiy data_bytes_written return result
     char buffer[BUFFER_SIZE];
-//    char buffer_info_from_Pipe [BUFFER_SIZE];
     const char* data = "SomeCOMMAND";
-    size_t BytesCommand;
+    size_t BytesReadFromDataPipe;
     sleep(5); // Delay in order to give enough time to the "ground-commander" child process to create the cmd_input pipe
-    BytesCommand = cmd_input.WriteToPipe(data, BUFFER_SIZE);
-    sleep(5);
-
-//    CHECK_EQUAL(BytesCommand, buffer);
-   // STRCMP_EQUAL(data, buffer);
+    cmd_input.WriteToPipe(data, strlen(data) + NULL_CHAR_LENGTH);
+    sleep(1); // sleep to allow enough time to the read_command in "ground-commander" to write to data pipe
+    BytesReadFromDataPipe = Test_GD_Commander->ReadFromDataPipe(buffer,BUFFER_SIZE);
+    sleep(2); // sleep to allow printout of read_command execution from "ground-commander"
+    CHECK_EQUAL(strlen(data) + NULL_CHAR_LENGTH, BytesReadFromDataPipe);
+    STRCMP_EQUAL(data, buffer);
 }
 
 TEST(GroundCommandTestGroup, Delete_Command_Success) 
@@ -136,8 +137,12 @@ TEST(GroundCommandTestGroup, GetResultData_Success)
     // - read the result buffer
     // - run ParseResult and validate all sample data
 	const char *data= "SomeResult";
+	size_t BytesWritten;
 	sleep(1);
-	Test_GD_Commander->WriteToInfoPipe(data);
+	BytesWritten = Test_GD_Commander->WriteToInfoPipe(data);
+	usleep(10); // delay to allow InfoPipe to be written
+//	CHECK_EQUAL(strlen(info_buffer) + NULL_CHAR_LENGTH, BytesWritten);
+//	STRCMP_EQUAL(data, info_buffer);
 }
 
 TEST(GroundCommandTestGroup, Perform_Success) 
