@@ -34,24 +34,28 @@
 #define CMD_BUF_SIZE 25 // TODO this should be globally defined
 
 static char command_buf[CMD_BUF_SIZE] = {'\0'};
-#define SPACE_COMMANDER_BIN  "bin/space-commander/space-commander" // use local bin, not the one unser CS1_APPS
+
 #define GROUND_COMMANDER_BIN "bin/ground-commander/ground-commander" // use local bin, not the one unser CS1_APPS
 
 #define UTEST_SIZE_OF_TEST_FILES 6
 
-TEST_GROUP(GroundCommanderTestGroup)
+TEST_GROUP(GroundCommandTestGroup)
 {
-    Net2Com* netman;
+    	Net2Com *Test_GD_Commander;
+	static const int BUFFER_SIZE = 50;
 
     void setup()
     {
         mkdir(CS1_TGZ, S_IRWXU);
         mkdir(CS1_LOGS, S_IRWXU);
+	mkdir(CS1_PIPES, S_IRWXU);
+	mkdir(GND_PIPES, S_IRWXU);
 
+	Test_GD_Commander = new Net2Com(GDcom_w_net_r, GDnet_w_com_r, GIcom_w_net_r, GInet_w_com_r);
         pid_t pid = fork();
 
         if (pid == 0) {
-            if(execl("./"SPACE_COMMANDER_BIN, SPACE_COMMANDER_BIN, NULL) == -1){
+            if(execl("./"GROUND_COMMANDER_BIN, GROUND_COMMANDER_BIN, NULL) == -1){
                 fprintf(stderr, "[ERROR] %s:%s:%d ", __FILE__, __func__, __LINE__);
                 exit(EXIT_FAILURE);
             }
@@ -59,11 +63,10 @@ TEST_GROUP(GroundCommanderTestGroup)
 
         // Make sure the commander is running
         while (system("ps aux | grep bin/ground-commander/ground-commander 1>/dev/null") != 0){
-           usleep(1000); 
+           	usleep(2000); 
         }
-
-        netman = Net2Com::create_netman();
         memset(command_buf, '\0', CMD_BUF_SIZE);
+	fprintf(stderr,"SETUP stage of ground-commander completed \n");
     }
     
     void teardown()
@@ -79,13 +82,13 @@ TEST_GROUP(GroundCommanderTestGroup)
         if (system("pidof ground-commander | xargs  kill -15") != 0) {
             fprintf(stderr, "[ERROR] pidof ground-commander | xargs -15 kill");
         }
-
-        DeleteDirectoryContent(CS1_PIPES);
-
-        if (netman) {
-            delete netman;
-            netman = NULL;
+	
+	 if (Test_GD_Commander != NULL) {
+            delete Test_GD_Commander;
+            Test_GD_Commander = NULL;
         }
+        DeleteDirectoryContent(CS1_PIPES);
+	fprintf(stderr,"TEARDOWN stage completed, Ground-commander process killed and pipes directory deleted\n");
     }
 };
 
@@ -97,18 +100,28 @@ TEST_GROUP(GroundCommanderTestGroup)
  *          Command Input File, and that the commands are validated
  *
  *-----------------------------------------------------------------------------*/
-TEST(GroundCommanderTestGroup, Read_Command_Success) 
+TEST(GroundCommandTestGroup, Read_Command_Success) 
 {
-    COMMAND_INPUT_PIPE
+    //COMMAND_INPUT_PIPE
     // - write a command buffer to the Command Input File
     // - run read_command
     // - check if data pipe was written to, and validate the contents of the 
     //   command that was written
     // - check that the command was removed from the Command Input File
     // - verfiy data_bytes_written return result
+    char buffer[BUFFER_SIZE];
+//    char buffer_info_from_Pipe [BUFFER_SIZE];
+    const char* data = "SomeCOMMAND";
+    size_t BytesCommand;
+    sleep(5); // Delay in order to give enough time to the "ground-commander" child process to create the cmd_input pipe
+    BytesCommand = cmd_input.WriteToPipe(data, BUFFER_SIZE);
+    sleep(5);
+
+//    CHECK_EQUAL(BytesCommand, buffer);
+   // STRCMP_EQUAL(data, buffer);
 }
 
-TEST(GroundCommanderTestGroup, Delete_Command_Success) 
+TEST(GroundCommandTestGroup, Delete_Command_Success) 
 {
     // - write a command buffer to the Command Input File
     // - run delete_command
@@ -116,15 +129,18 @@ TEST(GroundCommanderTestGroup, Delete_Command_Success)
     //   input file
 }
 
-TEST(GroundCommanderTestGroup, GetResultData_Success) 
+TEST(GroundCommandTestGroup, GetResultData_Success) 
 {
     // - provide sample result buffers for all available commands
     // - write place each command in the Dnet-w-com-r pipe
     // - read the result buffer
     // - run ParseResult and validate all sample data
+	const char *data= "SomeResult";
+	sleep(1);
+	Test_GD_Commander->WriteToInfoPipe(data);
 }
 
-TEST(GroundCommanderTestGroup, Perform_Success) 
+TEST(GroundCommandTestGroup, Perform_Success) 
 {
     // - test all switch cases
     // - test all conditional statements

@@ -93,19 +93,20 @@ int read_results()
 int read_command()
 {
     memset(cmd_buffer,0,MAX_COMMAND_SIZE);
-    //
+	char local_buffer[MAX_COMMAND_SIZE] = {'\0'};
+
     // the command input pipe contains command buffers that are ready to be passed
     // through the pipes to the satellite commander
     int input_bytes_read = cmd_input.ReadFromPipe(cmd_buffer, MAX_COMMAND_SIZE);
-
+	fprintf(stderr,"the result of reading from cmd_input pipe is: %d bytes \n", input_bytes_read);
     if (input_bytes_read > 0) // if we have read a command from the command_input_pipe
     {
         snprintf(gc_log_buffer,CS1_MAX_LOG_ENTRY,"Read from command input file: %s", cmd_buffer);
         Shakespeare::log(Shakespeare::NOTICE,GC_LOGNAME,gc_log_buffer);
         // TODO: write to normal pipes
+	commander->ReadFromDataPipe(local_buffer, MAX_COMMAND_SIZE);
         int data_bytes_written = commander->WriteToDataPipe( cmd_buffer);
         // TODO implement passing size // int data_bytes_written = commander->WriteToDataPipe(result, size);
-
         if (data_bytes_written > 0) 
         {
             return data_bytes_written;
@@ -213,11 +214,11 @@ int perform(int bytes)
         read = (unsigned char)info_buffer[i];
         switch (read) 
         {
-            case 252: 
+            case NET2COM_SESSION_ESTABLISHED: 
                 break;
-            case 253:
-            case 254:
-            case 255: 
+            case NET2COM_SESSION_END_CMD_CONFIRMATION:
+            case NET2COM_SESSION_END_TIMEOUT:
+            case NET2COM_SESSION_END_BY_OTHER_HOST: 
             {
                 int data_bytes = 0;
                 while (data_bytes == 0) {

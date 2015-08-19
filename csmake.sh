@@ -3,7 +3,7 @@
 #
 # AUTHORS : Space Concordia 2014, Joseph
 #
-# FILE : cscomtest.sh
+# FILE : csmake.sh
 # 
 # PURPOSE : csmake template
 #           -g      Group
@@ -13,9 +13,9 @@
 #           -u      usage
 #           -v      verbose (to get all DEBUG output)
 # 
-#       ex. ./cscomtest.sh                  =>   run ALL the tests
-#           ./cscomtest.sh -g deletelog     =>   run ALL deletelog tests
-#           ./cscomtest.sh -n nameOfTheTest
+#       ex. ./csmake.sh                  =>   run ALL the tests
+#           ./csmake.sh -g deletelog     =>   run ALL deletelog tests
+#           ./csmake.sh -n nameOfTheTest
 #
 #**********************************************************************************************************************
 
@@ -37,7 +37,7 @@ GROUP_LIST=(getlog deletelog net2com commander settime) # insert the group of th
 #------------------------------------------------------------------------------
 usage()
 {
-    echo "usage : cscomtest.sh  [-u] [-g testGroup] [-n testName] [-m numberOfRuns][-v][-s]"
+    echo "usage : csmake.sh  [-u] [-g testGroup] [-n testName] [-m numberOfRuns][-v][-s]"
     echo "          -c                  clean before build"
     echo "          -m numberOfRuns     run the specified tests 'numberOfRuns' times and stop if error" 
     echo "          -n TestName"
@@ -93,6 +93,7 @@ if [ "$GROUP" != "" ]; then
         'net2com')      ARGUMENTS="-g Net2ComTestGroup" ;;
         'commander')    ARGUMENTS="-g CommanderTestGroup";;
         'settime')      ARGUMENTS="-g SetTimeTestGroup";;
+	'ground-commander') ARGUMENTS="-g GroundCommanderTestGroup";;
     esac
 fi
 
