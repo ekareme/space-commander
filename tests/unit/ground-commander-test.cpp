@@ -95,7 +95,7 @@ TEST_GROUP(GroundCommandTestGroup)
 
 /*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  *
- * GROUP :  GroundCommanderTestGroup
+ * GROUP :  GroundCommandTestGroup
  * NAME :   ReadCommand_Success 
  * DESC :   This test will make sure commands are read successfully from the 
  *          Command Input File, and that the commands are validated
@@ -136,13 +136,10 @@ TEST(GroundCommandTestGroup, GetResultData_Success)
     // - write place each command in the Dnet-w-com-r pipe
     // - read the result buffer
     // - run ParseResult and validate all sample data
-	const char *data= "SomeResult";
 	size_t BytesWritten;
-	sleep(1);
-	BytesWritten = Test_GD_Commander->WriteToInfoPipe(data);
-	usleep(10); // delay to allow InfoPipe to be written
-//	CHECK_EQUAL(strlen(info_buffer) + NULL_CHAR_LENGTH, BytesWritten);
-//	STRCMP_EQUAL(data, info_buffer);
+	sleep(1); // delay to allow InfoPipe to be written
+	BytesWritten = Test_GD_Commander->WriteToInfoPipe(GETTIME_CMD);
+	sleep(2);
 }
 
 TEST(GroundCommandTestGroup, Perform_Success) 
