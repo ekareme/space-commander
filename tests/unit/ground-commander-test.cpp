@@ -39,7 +39,7 @@ static char command_buf[CMD_BUF_SIZE] = {'\0'};
 
 #define UTEST_SIZE_OF_TEST_FILES 6
 
-TEST_GROUP(GroundCommandTestGroup)
+TEST_GROUP(GroundCommanderTestGroup)
 {
     	Net2Com *Test_GD_Commander;
 	static const int BUFFER_SIZE = 50;
@@ -64,10 +64,12 @@ TEST_GROUP(GroundCommandTestGroup)
 
         // Make sure the commander is running
         while (system("ps aux | grep bin/ground-commander/ground-commander 1>/dev/null") != 0){
-           	usleep(2000); 
+           	usleep(1000); 
         }
         memset(command_buf, '\0', CMD_BUF_SIZE);
+#ifdef CS1_DEBUG
 	fprintf(stderr,"SETUP stage of ground-commander completed \n");
+#endif
     }
     
     void teardown()
@@ -89,19 +91,21 @@ TEST_GROUP(GroundCommandTestGroup)
             Test_GD_Commander = NULL;
         }
         DeleteDirectoryContent(CS1_PIPES);
-	fprintf(stderr,"TEARDOWN stage completed, Ground-commander process killed and pipes directory deleted\n");
+#ifdef CS1_DEBUG
+	fprintf(stderr,"TEARDOWN stage completed, Ground-commander process killed and pipes directory deleted \n");
+#endif
     }
 };
 
 /*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  *
- * GROUP :  GroundCommandTestGroup
+ * GROUP :  GroundCommanderTestGroup
  * NAME :   ReadCommand_Success 
  * DESC :   This test will make sure commands are read successfully from the 
  *          Command Input File, and that the commands are validated
  *
  *-----------------------------------------------------------------------------*/
-TEST(GroundCommandTestGroup, Read_Command_Success) 
+TEST(GroundCommanderTestGroup, Read_Command_Success) 
 {
     //COMMAND_INPUT_PIPE
     // - write a command buffer to the Command Input File
@@ -113,7 +117,7 @@ TEST(GroundCommandTestGroup, Read_Command_Success)
     char buffer[BUFFER_SIZE];
     const char* data = "SomeCOMMAND";
     size_t BytesReadFromDataPipe;
-    sleep(5); // Delay in order to give enough time to the "ground-commander" child process to create the cmd_input pipe
+    sleep(2); // Delay in order to give enough time to the "ground-commander" child process to create the cmd_input pipe
     cmd_input.WriteToPipe(data, strlen(data) + NULL_CHAR_LENGTH);
     sleep(1); // sleep to allow enough time to the read_command in "ground-commander" to write to data pipe
     BytesReadFromDataPipe = Test_GD_Commander->ReadFromDataPipe(buffer,BUFFER_SIZE);
@@ -122,7 +126,7 @@ TEST(GroundCommandTestGroup, Read_Command_Success)
     STRCMP_EQUAL(data, buffer);
 }
 
-TEST(GroundCommandTestGroup, Delete_Command_Success) 
+TEST(GroundCommanderTestGroup, Delete_Command_Success) 
 {
     // - write a command buffer to the Command Input File
     // - run delete_command
@@ -130,7 +134,7 @@ TEST(GroundCommandTestGroup, Delete_Command_Success)
     //   input file
 }
 
-TEST(GroundCommandTestGroup, GetResultData_Success) 
+TEST(GroundCommanderTestGroup, GetResultData_Success) 
 {
     // - provide sample result buffers for all available commands
     // - write place each command in the Dnet-w-com-r pipe
@@ -142,7 +146,7 @@ TEST(GroundCommandTestGroup, GetResultData_Success)
 	sleep(2);
 }
 
-TEST(GroundCommandTestGroup, Perform_Success) 
+TEST(GroundCommanderTestGroup, Perform_Success) 
 {
     // - test all switch cases
     // - test all conditional statements

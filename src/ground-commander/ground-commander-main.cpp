@@ -97,17 +97,23 @@ int read_command()
     // the command input pipe contains command buffers that are ready to be passed
     // through the pipes to the satellite commander
     int input_bytes_read = cmd_input.ReadFromPipe(cmd_buffer, MAX_COMMAND_SIZE);
+#ifdef CS1_DEBUG
 	fprintf(stderr,"the result of reading from cmd_input pipe is: %d bytes \n", input_bytes_read);
+#endif
     if (input_bytes_read > 0) // if we have read a command from the command_input_pipe
     {
-        snprintf(gc_log_buffer,CS1_MAX_LOG_ENTRY,"Read from command input file: %s", cmd_buffer);
+#ifdef CS1_DEBUG      
+  	snprintf(gc_log_buffer,CS1_MAX_LOG_ENTRY,"Read from command input file: %s", cmd_buffer);
         Shakespeare::log(Shakespeare::NOTICE,GC_LOGNAME,gc_log_buffer);
+#endif
         // TODO: write to normal pipes
         int data_bytes_written = commander->WriteToDataPipe( cmd_buffer);
         // TODO implement passing size // int data_bytes_written = commander->WriteToDataPipe(result, size);
         if (data_bytes_written > 0) 
         {
+#ifdef CS1_DEBUG
             fprintf(stderr, "In read command execution, WriteToDataPipe succeded with %d byte written \n", data_bytes_written);
+#endif
 	    return data_bytes_written;
             delete_command(); // delete_command is obsolete now, IIRC reading from pipe removes the line automatically
             // TODO perhaps rewrite the data back to the pipe if it failed to be passed on correctly

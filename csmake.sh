@@ -27,7 +27,7 @@ MBCC=0
 MULTIPLE_RUN=1
 CLEAN=0
 SKIP_TEST=0
-GROUP_LIST=(getlog deletelog net2com commander settime) # insert the group of the test here.
+GROUP_LIST=(getlog deletelog net2com commander settime ground-commander) # insert the group of the test here.
 
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -88,12 +88,12 @@ done
 #------------------------------------------------------------------------------
 if [ "$GROUP" != "" ]; then
     case $GROUP in 
-        'getlog')       ARGUMENTS="-g GetLogTestGroup" ;;
-        'deletelog')    ARGUMENTS="-g DeleteLogTestGroup" ;;
-        'net2com')      ARGUMENTS="-g Net2ComTestGroup" ;;
-        'commander')    ARGUMENTS="-g CommanderTestGroup";;
-        'settime')      ARGUMENTS="-g SetTimeTestGroup";;
-	'ground-commander') ARGUMENTS="-g GroundCommanderTestGroup";;
+        'getlog')       ARGUMENTS="-sg GetLogTestGroup" ;;
+        'deletelog')    ARGUMENTS="-sg DeleteLogTestGroup" ;;
+        'net2com')      ARGUMENTS="-sg Net2ComTestGroup" ;;
+        'commander')    ARGUMENTS="-sg CommanderTestGroup";;
+        'settime')      ARGUMENTS="-sg SetTimeTestGroup";;
+	'ground-commander') ARGUMENTS="-sg GroundCommanderTestGroup";;
     esac
 fi
 
