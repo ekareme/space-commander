@@ -86,7 +86,6 @@ buildBin: make_dir $(SPACE_COMMANDER_BIN) staticlibs.tar buildGroundCommander
 $(SPACE_COMMANDER_BIN)/%.o: src/space-commander/%.cpp include/space-commander/%.h
 	$(CC) $(CFLAGS) $(CPPFLAGS) $(CXXFLAGS) $(DEBUGFLAGS) $(INCLUDES) -c $< -o $@ $(ENV) 
 
-$(SPACE_COMMANDER_BIN): ENV = -DCS1_DEBUG -DPRESERVE -DGROUND_MOCK_SAT
 $(SPACE_COMMANDER_BIN): src/space-commander/space-commander-main.cpp $(COMMON_OBJECTS) $(OBJECTS)
 	$(CC) $(CFLAGS) $(CPPFLAGS) $(CXXFLAGS) $(DEBUGFLAGS) $(INCLUDES) $(LIBPATH) -o $@/space-commander $^ $(LIBS) $(ENV)
 
