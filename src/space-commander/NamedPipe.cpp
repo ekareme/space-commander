@@ -163,7 +163,7 @@ void NamedPipe::closePipe()
 * RETURN : Number of bytes read.
 *
 *-----------------------------------------------------------------------------*/
-int NamedPipe::ReadFromPipe(char* buffer, int size) 
+int NamedPipe::ReadFromPipe(char* buffer, int size ) 
 {
     int bytes_read = 0;
 
@@ -174,7 +174,7 @@ int NamedPipe::ReadFromPipe(char* buffer, int size)
     struct pollfd fds;
     fds.fd = fifo;
     fds.events = POLLIN;
-	
+    
     // poll 5 ms to see if there's new data to be read
     if(poll(&fds, 1, 5)) {
        bytes_read = read(fifo, buffer, size);

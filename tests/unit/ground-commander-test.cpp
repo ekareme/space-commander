@@ -67,9 +67,6 @@ TEST_GROUP(GroundCommanderTestGroup)
            	usleep(1000); 
         }
         memset(command_buf, '\0', CMD_BUF_SIZE);
-#ifdef CS1_DEBUG
-	fprintf(stderr,"SETUP stage of ground-commander completed \n");
-#endif
     }
     
     void teardown()
@@ -91,9 +88,6 @@ TEST_GROUP(GroundCommanderTestGroup)
             Test_GD_Commander = NULL;
         }
         DeleteDirectoryContent(CS1_PIPES);
-#ifdef CS1_DEBUG
-	fprintf(stderr,"TEARDOWN stage completed, Ground-commander process killed and pipes directory deleted \n");
-#endif
     }
 };
 
@@ -121,7 +115,7 @@ TEST(GroundCommanderTestGroup, Read_Command_Success)
     cmd_input.WriteToPipe(data, strlen(data) + NULL_CHAR_LENGTH);
     sleep(1); // sleep to allow enough time to the read_command in "ground-commander" to write to data pipe
     BytesReadFromDataPipe = Test_GD_Commander->ReadFromDataPipe(buffer,BUFFER_SIZE);
-    sleep(2); // sleep to allow printout of read_command execution from "ground-commander"
+    sleep(1); // sleep to allow printout of read_command execution from "ground-commander"
     CHECK_EQUAL(strlen(data) + NULL_CHAR_LENGTH, BytesReadFromDataPipe);
     STRCMP_EQUAL(data, buffer);
 }
@@ -140,10 +134,17 @@ TEST(GroundCommanderTestGroup, GetResultData_Success)
     // - write place each command in the Dnet-w-com-r pipe
     // - read the result buffer
     // - run ParseResult and validate all sample data
-	size_t BytesWritten;
+	size_t BytesRead, BytesWritten;
+	char buffer[BUFFER_SIZE] = {'\0'};
+	char command[BUFFER_SIZE]= {'\0'};
 	sleep(1); // delay to allow InfoPipe to be written
-	BytesWritten = Test_GD_Commander->WriteToInfoPipe(GETTIME_CMD);
-	sleep(2);
+	command[0] = GETTIME_CMD;
+	BytesWritten = Test_GD_Commander->WriteToInfoPipe(command);
+	sleep(1);
+	BytesRead = Test_GD_Commander->ReadFromDataPipe(buffer, BUFFER_SIZE);
+	sleep(1);
+	CHECK_EQUAL(BytesWritten, BytesRead);
+	STRCMP_EQUAL(command, buffer);
 }
 
 TEST(GroundCommanderTestGroup, Perform_Success) 

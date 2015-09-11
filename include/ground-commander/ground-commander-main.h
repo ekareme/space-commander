@@ -43,7 +43,7 @@ static char cmd_buffer[MAX_COMMAND_SIZE] = {'\0'};
 static Net2Com* commander = 0; 
 static string stored_command;
 InfoBytes* ParseResultData(char* result_buffer);
-int perform(int bytes);
+int Process_results(int bytes);
 int read_results();
 int read_command();
 int delete_command();
@@ -61,3 +61,4 @@ static NamedPipe cmd_input(COMMAND_INPUT_PIPE);
 
 // The file where commands are added to be sent to the satellite
 const char CMD_INPUT_PIPE[] = COMMAND_INPUT_PIPE;
+
