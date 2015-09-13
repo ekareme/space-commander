@@ -8,6 +8,10 @@
 
 #include "ground-commander-main.h"
 
+#ifdef CS1_DEBUG
+NamedPipe *mock_pipe;
+#endif
+
 /*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  *
  * NAME : main 
@@ -35,6 +39,11 @@ int main()
      commander = new Net2Com(GDcom_w_net_r, GDnet_w_com_r, GIcom_w_net_r, GInet_w_com_r);
 #endif
 
+#ifdef CS1_DEBUG
+	mock_pipe = new NamedPipe(MOCK_PIPE);
+	if (mock_pipe->Exist()== false)mock_pipe->CreatePipe();
+#endif
+
     Shakespeare::log(Shakespeare::NOTICE, GC_LOGNAME, "Waiting for commands to send or satellite data");
     while (true)
     {
@@ -44,7 +53,7 @@ int main()
             memset(gc_log_buffer,0,CS1_MAX_LOG_ENTRY);
             snprintf(gc_log_buffer,CS1_MAX_LOG_ENTRY,"Got bytes from Ground Netman: %d", result_bytes);
             Shakespeare::log(Shakespeare::NOTICE, GC_LOGNAME, gc_log_buffer );
-	    Process_results(result_bytes);
+	    process_results(result_bytes);
         }
         // if no result buffers, proceed to check for commands to send
         read_command();
@@ -55,6 +64,14 @@ int main()
         delete commander;
         commander = 0;
     }
+
+#ifdef CS1_DEBUG
+   if(mock_pipe) {
+
+	delete mock_pipe;
+	mock_pipe = 0;
+	}
+#endif
 
     return CS1_SUCCESS;
 }
@@ -68,7 +85,6 @@ int create_pipes()
         Shakespeare::log(Shakespeare::NOTICE,GC_LOGNAME,"Creating "COMMAND_INPUT_PIPE);
         cmd_input.CreatePipe();
     };
-
     return CS1_SUCCESS; // TODO when will this ever return CS1_FAILURE?
 }
 
@@ -161,7 +177,7 @@ int delete_command()
  * The perform function will parse incoming bytes from the Dnet_w_com_r pipe 
  * and attempt to detect result buffers. 
  **/
-int Process_results(int bytes)
+int process_results(int bytes)
 {
     // TODO there is supposed to be a master log of outstanding command requests and
     // the result of the command execution. Except for getlog, there is a one-to-one
@@ -184,7 +200,7 @@ int Process_results(int bytes)
                 break;
 			case GETTIME_CMD:
 				Shakespeare::log(Shakespeare::NOTICE, GC_LOGNAME, "Decoding GETTIME_CMD...");
-				commander->WriteToDataPipe(info_buffer);// it is written in Data Pipe just as a validation procedure in unit test
+				mock_pipe->WriteToPipe(info_buffer, strlen(info_buffer) + 1);// it is written in mock Pipe just as a validation procedure for unit test
                 break;
 			default:
 				snprintf(gc_log_buffer,CS1_MAX_LOG_ENTRY,"Not sure what we got, info buffer has value: '%s'", info_buffer);

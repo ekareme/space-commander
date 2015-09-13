@@ -42,6 +42,7 @@ static char command_buf[CMD_BUF_SIZE] = {'\0'};
 TEST_GROUP(GroundCommanderTestGroup)
 {
     	Net2Com *Test_GD_Commander;
+	NamedPipe *mock_pipe1;
 	static const int BUFFER_SIZE = 50;
 	static const int NULL_CHAR_LENGTH = 1;
 
@@ -53,6 +54,8 @@ TEST_GROUP(GroundCommanderTestGroup)
 	mkdir(GND_PIPES, S_IRWXU);
 
 	Test_GD_Commander = new Net2Com(GDnet_w_com_r, GDcom_w_net_r, GInet_w_com_r, GIcom_w_net_r);
+	mock_pipe1 = new NamedPipe(MOCK_PIPE);
+	if (mock_pipe1->Exist() == false) mock_pipe1->CreatePipe();
         pid_t pid = fork();
 
         if (pid == 0) {
@@ -87,6 +90,10 @@ TEST_GROUP(GroundCommanderTestGroup)
             delete Test_GD_Commander;
             Test_GD_Commander = NULL;
         }
+	if(mock_pipe1 !=NULL) {
+	delete mock_pipe1;
+	mock_pipe1 = NULL;
+	}
         DeleteDirectoryContent(CS1_PIPES);
     }
 };
@@ -137,11 +144,12 @@ TEST(GroundCommanderTestGroup, GetResultData_Success)
 	size_t BytesRead, BytesWritten;
 	char buffer[BUFFER_SIZE] = {'\0'};
 	char command[BUFFER_SIZE]= {'\0'};
+	mock_pipe1->Open('r');
 	sleep(1); // delay to allow InfoPipe to be written
 	command[0] = GETTIME_CMD;
 	BytesWritten = Test_GD_Commander->WriteToInfoPipe(command);
 	sleep(1);
-	BytesRead = Test_GD_Commander->ReadFromDataPipe(buffer, BUFFER_SIZE);
+	BytesRead = mock_pipe1->ReadFromPipe(buffer,BUFFER_SIZE);
 	sleep(1);
 	CHECK_EQUAL(BytesWritten, BytesRead);
 	STRCMP_EQUAL(command, buffer);
