@@ -8,9 +8,6 @@
 
 #include "ground-commander-main.h"
 
-#ifdef CS1_DEBUG
-NamedPipe *mock_pipe;
-#endif
 
 /*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  *
@@ -39,11 +36,6 @@ int main()
      commander = new Net2Com(GDcom_w_net_r, GDnet_w_com_r, GIcom_w_net_r, GInet_w_com_r);
 #endif
 
-#ifdef CS1_DEBUG
-	mock_pipe = new NamedPipe(MOCK_PIPE);
-	if (mock_pipe->Exist()== false)mock_pipe->CreatePipe();
-#endif
-
     Shakespeare::log(Shakespeare::NOTICE, GC_LOGNAME, "Waiting for commands to send or satellite data");
     while (true)
     {
@@ -65,15 +57,7 @@ int main()
         commander = 0;
     }
 
-#ifdef CS1_DEBUG
-   if(mock_pipe) {
-
-	delete mock_pipe;
-	mock_pipe = 0;
-	}
-#endif
-
-    return CS1_SUCCESS;
+  return CS1_SUCCESS;
 }
 
 /**
@@ -187,27 +171,7 @@ int process_results(int bytes)
 #ifdef GROUND_MOCK_SAT // using the single pipe method, built from Olivier's hack of gnd_main (netman)
 	if (bytes) 
 	{ // success
-    #ifdef CS1_DEBUG
-        InfoBytes* result_object;
-        ICommand* command = CommandFactory::CreateCommand(info_buffer);
-		switch ( (uint8_t)info_buffer[0] )
-		{
-			case GETLOG_CMD:
-				Shakespeare::log(Shakespeare::NOTICE, GC_LOGNAME, "Decoding GETLOG_CMD...");
-				// TODO: log to proper system (get log), e.g. log to database
-                result_object = ((GetLogCommand* )command)->ParseResult(info_buffer,"/home/logs/cheese");
-
-                break;
-			case GETTIME_CMD:
-				Shakespeare::log(Shakespeare::NOTICE, GC_LOGNAME, "Decoding GETTIME_CMD...");
-				mock_pipe->WriteToPipe(info_buffer, strlen(info_buffer) + 1);// it is written in mock Pipe just as a validation procedure for unit test
-                break;
-			default:
-				snprintf(gc_log_buffer,CS1_MAX_LOG_ENTRY,"Not sure what we got, info buffer has value: '%s'", info_buffer);
-				Shakespeare::log(Shakespeare::NOTICE, GC_LOGNAME, gc_log_buffer);
-		}
-    #endif
-
+   
         //InfoBytes * parsed_result = ParseResultData(info_buffer);
 
         // TODO
@@ -264,9 +228,7 @@ int process_results(int bytes)
                         free(buffer);
                         buffer = NULL;
                     }
-                    
                     sleep(COMMANER_SLEEP_TIME); //We have to sleep because we got data from the info pipe. Wait for the data pipe to be ready
-                    
                 }
 
                 read_total = 0;
@@ -281,7 +243,6 @@ int process_results(int bytes)
         }
     }
 #endif
-    
     return CS1_SUCCESS; 
 }
 
